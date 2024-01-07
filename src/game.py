@@ -4,6 +4,7 @@ from Game.stock import Stock
 
 import os
 from itertools import product
+from math import ceil
 
 from random import randint
 
@@ -96,6 +97,7 @@ class Game:
 
         # Handle sales and 2-for-1
         if merger_results is not None:
+            self.handle_merger_bonuses(merger_results["mergees"])
             self.handle_sale_and_two_for_one(merger_results)
 
         for tile in self.players[self.current_player_index].tiles:
@@ -130,6 +132,57 @@ class Game:
             self.players[self.current_player_index].buy_stock(purchase_names, counts, prices)
 
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
+
+    def handle_merger_bonuses(self, mergees):
+        for mergee in mergees:
+            first_place_bonus = self.stocks[mergee].current_bonus
+            second_place_bonus = first_place_bonus // 2
+
+            first_number = 0
+            first_player_index = []
+
+            second_number = 0
+            second_player_index = []
+
+            for i in range(len(self.players)):
+                n = self.players[i].stocks[mergee]
+                if n > first_number:
+                    second_number = first_number
+                    second_player_index = first_player_index
+
+                    first_number = n
+                    first_player_index = [i, ]
+
+                elif n == first_number:
+                    first_player_index.append(i)
+
+                elif n > second_number:
+                    second_number = n
+                    second_player_index = [i, ]
+                
+                elif n == second_number:
+                    second_player_index.append(i)
+
+            if len(first_player_index) > 1:
+                bonus = (first_place_bonus + second_place_bonus) / len(first_player_index)
+                # Round up to nearest hundred
+                bonus = ceil(bonus / 100) * 100
+
+                for index in first_player_index:
+                    self.players[index].money += bonus
+
+                continue
+            if len(first_player_index) == 0:
+                raise Exception("Something's hinky")
+
+            self.players[first_player_index[0]].money += first_place_bonus
+
+            second_place_bonus = second_place_bonus / len(second_player_index)
+            second_place_bonus = ceil(second_place_bonus / 100) * 100
+
+            for index in second_player_index:
+                self.players[index].money += second_place_bonus
+
 
     def handle_sale_and_two_for_one(self, merger_results):
         """From merger results, allow player to sell, 2-for-1, or keep"""
