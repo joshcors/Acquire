@@ -183,7 +183,6 @@ class Game:
             for index in second_player_index:
                 self.players[index].money += second_place_bonus
 
-
     def handle_sale_and_two_for_one(self, merger_results):
         """From merger results, allow player to sell, 2-for-1, or keep"""
         survivor = merger_results['survivor']
@@ -198,22 +197,12 @@ class Game:
             print(f"You own {number_held} of {name}, which has just been absorbed by {survivor}")
             print(f"{name} is worth ${self.stocks[name].current_price}")
             print(f"{survivor} is worth ${self.stocks[name].current_price}")
-            resp = input(f"Enter: [number to sell] [number to 2-for-1]")
-            success = False
-            while not success:
-                success = True
-                try:
-                    resp = resp.split(" ")
-                    sell = int(resp[0])
-                    exchange = int(resp[-1])
-                    assert exchange%2 == 0
+            resp = self.players[self.current_player_index].get_sell_two_for_one_decision(name)
+            sell = int(resp[0])
+            exchange = int(resp[-1])
 
-                    self.handle_sale([name, ], [sell, ])
-                    self.handle_two_for_one(name, survivor, exchange)
-                except:
-                    success = False
-                    print("Invalid")
-                    resp = input(f"Enter: [number to sell] [number to 2-for-1]")
+            self.handle_sale([name, ], [sell, ])
+            self.handle_two_for_one(name, survivor, exchange)
 
     def handle_sale(self, names, counts):
         """Pass stock sale info to player"""

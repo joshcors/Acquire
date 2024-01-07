@@ -73,6 +73,37 @@ class Player:
 
         return result
     
+    def get_sell_two_for_one_decision(self, name):
+        resp = input(f"Enter: [number of {name} to sell] [number of {name} to 2-for-1]")
+        success = False
+        
+        while not success:
+            invalid_message = 'Invalid: '
+            success = True
+            try:
+                try:
+                    resp = resp.split(" ")
+                    sell = int(resp[0])
+                    exchange = int(resp[-1])
+                except:
+                    invalid_message += 'Input must be two integers.'
+                    raise Exception
+                
+                if exchange % 2 != 0:
+                    invalid_message += "Number to 2-for-1 must be even. "
+                if (sell + exchange) > self.stocks[name]:
+                    invalid_message += "Cannot sell/2-for-1 more than you have"
+
+
+                assert exchange%2 == 0
+                assert (sell + exchange) <= self.stocks[name]
+            except:
+                success = False
+                print("Invalid")
+                resp = input(f"Enter: [number to sell] [number to 2-for-1]")
+
+        return resp
+
     def buy_stock(self, names, counts, stock_prices):
         total_expenditure = 0
         for count, price in zip(counts, stock_prices):
