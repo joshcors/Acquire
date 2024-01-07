@@ -29,15 +29,26 @@ class Game:
         self.initialize_players()
 
     def get_row_col_from_tile(self, tile):
+        """Extract row and column tuple from tile string"""
         return tile[-1], tile[:-1]
 
     def get_random_tile(self):
+        """Get random tile from remaining tiles"""
         ind = randint(0, len(self.tiles) - 1)
         tile = self.tiles.pop(ind)
 
         return tile
+    
+    def get_valid_random_tile(self):
+        """Get random tile from remaining tiles, weeding out now-dead cells"""
+        tile = self.get_random_tile()
+        while tile in self.board.dead_cells:
+            tile = self.get_random_tile()
+
+        return tile
 
     def initialize_board(self):
+        """Initialize board with initial drawn tiles"""
         self.initial_tiles = []
         for i in range(len(self.players)):
             self.initial_tiles.append(
@@ -59,18 +70,21 @@ class Game:
             self.board.assign(*self.get_row_col_from_tile(tile), initial_draw=True)
     
     def initialize_players(self):
+        """Draw initial tiles for each player"""
         for i in range(6):
             for j in range(len(self.players)):
-                self.players[j].add_tile(self.get_random_tile())
+                self.players[j].add_tile(self.get_valid_random_tile())
 
     def turn(self):
+        """
+        Take turn of current player, consisting of:
+        1. Placing tile
+        2. Handling merger sale/2-for-1
+        3. Handle stock purchase
+        """
         print(self.board)
         self.board.set_current_player(self.current_player_index)
         tile = self.players[self.current_player_index].get_tile_selection()
-
-        self.players[self.current_player_index].add_tile(
-            self.get_random_tile()
-        )
 
         merger_results = self.board.assign(*self.get_row_col_from_tile(tile))
 
@@ -80,12 +94,21 @@ class Game:
                 self.stocks[name].set_current_info(size)
             self.hotel_in_play[name] = size >= 2
 
+        # Handle sales and 2-for-1
         if merger_results is not None:
-            survivor = merger_results['survivor']
-            mergees = merger_results['mergees']
+            self.handle_sale_and_two_for_one(merger_results)
+
+        for tile in self.players[self.current_player_index].tiles:
+            if tile in self.board.dead_cells:
+                new_tile = self.get_valid_random_tile()
+
+                print(f"Current player's tile {tile} now dead, replacing")
+                self.players[self.current_player_index].replace_tile(tile, new_tile)
+
+        new_tile = self.get_valid_random_tile()
+        self.players[self.current_player_index].add_tile(new_tile)
 
         if any(self.hotel_in_play.values()):
-
             options = []
             for name in self.hotel_in_play:
                 if self.hotel_in_play[name]:
@@ -108,15 +131,42 @@ class Game:
 
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
-    def handle_sale(self):
-        ...
+    def handle_sale_and_two_for_one(self, merger_results):
+        """From merger results, allow player to sell, 2-for-1, or keep"""
+        survivor = merger_results['survivor']
+        mergees = merger_results['mergees']
 
-    def handle_two_for_one(self, n):
-        ...
+        for name in mergees:
+            if self.players[self.current_player_index].stocks[name] == 0:
+                continue
 
-if __name__=="__main__":
-    g = Game(["a", "b", "c"])
-    print(g.initial_tiles)
-    g.turn()
+            number_held = self.players[self.current_player_index].stocks[name]
 
-    import ipdb; ipdb.set_trace()
+            print(f"You own {number_held} of {name}, which has just been absorbed by {survivor}")
+            print(f"{name} is worth ${self.stocks[name].current_price}")
+            print(f"{survivor} is worth ${self.stocks[name].current_price}")
+            resp = input(f"Enter: [number to sell] [number to 2-for-1]")
+            success = False
+            while not success:
+                success = True
+                try:
+                    resp = resp.split(" ")
+                    sell = int(resp[0])
+                    exchange = int(resp[-1])
+                    assert exchange%2 == 0
+
+                    self.handle_sale([name, ], [sell, ])
+                    self.handle_two_for_one(name, survivor, exchange)
+                except:
+                    success = False
+                    print("Invalid")
+                    resp = input(f"Enter: [number to sell] [number to 2-for-1]")
+
+    def handle_sale(self, names, counts):
+        """Pass stock sale info to player"""
+        self.players[self.current_player_index].sell_stock(names, counts, [self.stocks[name].current_price for name in names])
+
+    def handle_two_for_one(self, old_name, new_name, number):
+        """Pass 2-for-1 info to player"""
+        self.players[self.current_player_index].two_for_one(old_name, new_name, number)
+

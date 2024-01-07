@@ -22,6 +22,7 @@ class Stock:
         self.current_bonus = None
 
     def set_current_info(self, number):
+        """Assign price and bonus value based on number of hotels in chain"""
         if number < 2:
             raise Exception("Something's wrong")
         

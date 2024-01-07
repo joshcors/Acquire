@@ -45,11 +45,14 @@ class Board:
 
         self.players = players
         self.current_player = self.players[0]
+        self.dead_cells = []
+        self.dead_check_cells = []
 
         for row in self.ROWS:
             self.board[row] = {}
             for col in self.COLS:
                 self.board[row][str(col)] = None
+                self.dead_check_cells.append((row, col))
 
     def __str__(self):
         s = ' ' * 23 + self.COLS[-2] + '\n'
@@ -157,7 +160,31 @@ class Board:
         surrounding_chains = list(filter(self.is_chain, surrounding_cells))
 
         return surrounding_chains
-    
+
+    def update_dead_cells(self):
+        new_dead_cells = []
+        for row, col in self.dead_check_cells:
+            surrounding_chain_cells = self.surrounding_chain_cells(row, col)
+            surrounding_chains = set([self.board[_row][_col] for _row, _col in surrounding_chain_cells])
+
+            if len(surrounding_chain_cells) < 2:
+                continue
+
+            safe_count = 0
+            for chain in surrounding_chains:
+                safe_count += int(self.hotels_dict[chain].safe)
+
+            if safe_count >= 2:
+                new_dead_cells.append((row, col))
+
+
+        for row, col in new_dead_cells:
+                cell = f"{col}{row}"
+                self.dead_cells.append(cell)
+                self.dead_check_cells.pop(
+                    self.dead_check_cells.index((row, col))
+                )
+
     def merge(self, survivor, mergees, additional_cells):
         # Merge all subordinant hotels into survivor and reset them
         for mergee in mergees:
@@ -222,6 +249,8 @@ class Board:
         if hotel != "Single":
             self.hotels_dict[hotel].add_cell(f"{row}{col}")
         self.board[row][col] = hotel
+
+        self.dead_check_cells.pop(self.dead_check_cells.index((str(row), str(col))))
 
         if merger:
             self.merge(hotel, mergees, additional_cells)

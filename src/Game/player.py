@@ -18,6 +18,9 @@ class Player:
     def add_tile(self, tile):
         self.tiles.append(tile)
 
+    def replace_tile(self, old_tile, new_tile):
+        self.tiles[self.tiles.index(old_tile)] = new_tile
+
     def get_new_chain_decision(self, options):
         first_letters = [option[0] for option in options]
         display_options = [f"({letter}){option[1:]}" for letter, option in zip(first_letters, options)]
