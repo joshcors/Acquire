@@ -11,8 +11,8 @@ from random import randint
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class Game:
-    def __init__(self, player_names):
-        self.players = [Player(name) for name in player_names]
+    def __init__(self, players):
+        self.players = players
         self.current_player_index = 0
 
         with open(os.path.join(dir_path, "Game", "stock_names.txt"), 'r') as f:
@@ -66,9 +66,10 @@ class Game:
                 min_ind = i
         
         self.current_player_index = min_ind
+        self.current_player = self.players[self.current_player_index]
 
-        for tile in self.initial_tiles:
-            self.board.assign(*self.get_row_col_from_tile(tile), initial_draw=True)
+        for i, tile in enumerate(self.initial_tiles):
+            self.board.assign(*self.get_row_col_from_tile(tile), self.players[i], initial_draw=True)
     
     def initialize_players(self):
         """Draw initial tiles for each player"""
@@ -84,10 +85,11 @@ class Game:
         3. Handle stock purchase
         """
         print(self.board)
-        self.board.set_current_player(self.current_player_index)
+        self.current_player = self.players[self.current_player_index]
+        
         tile = self.players[self.current_player_index].get_tile_selection()
 
-        merger_results = self.board.assign(*self.get_row_col_from_tile(tile))
+        merger_results = self.board.assign(*self.get_row_col_from_tile(tile), self.players[self.current_player_index])
 
         for name in self.stock_names:
             size = self.board.hotels_dict[name].size()
@@ -97,6 +99,7 @@ class Game:
 
         # Handle sales and 2-for-1
         if merger_results is not None:
+            self.stocks_remaining[merger_results["survivor"]] -= 1
             self.handle_merger_bonuses(merger_results["mergees"])
             self.handle_sale_and_two_for_one(merger_results)
 
@@ -116,22 +119,19 @@ class Game:
                 if self.hotel_in_play[name]:
                     options.append(name)
 
-            purchases = self.players[self.current_player_index].get_buy_selections(options)
-            good_purchases = False
-            while not good_purchases:
-                good_purchases = True
-                for name in self.stock_names:
-                    if purchases.count(name) > self.stocks_remaining[name]:
-                        print(f"Cannot buy {purchases.count(name)} stocks of {name}, only {self.stocks_remaining[name]} left")
-                        good_purchases = False
+            purchases = self.players[self.current_player_index].get_buy_selections(options, self.stock_names, self.stocks_remaining)
 
             purchase_names = list(set(purchases))
             counts = [purchases.count(name) for name in purchase_names]
             prices = [self.stocks[name].current_price for name in purchase_names]
 
+            for name, count in zip(purchase_names, counts):
+                self.stocks_remaining[name] -= count
+
             self.players[self.current_player_index].buy_stock(purchase_names, counts, prices)
 
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
+        self.current_player = self.players[self.current_player_index]
 
     def handle_merger_bonuses(self, mergees):
         for mergee in mergees:

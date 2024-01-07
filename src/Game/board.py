@@ -44,7 +44,6 @@ class Board:
         self.hotels_dict = {name : hotel for name, hotel in zip(self.hotel_names, hotels)}
 
         self.players = players
-        self.current_player = self.players[0]
         self.dead_cells = []
         self.dead_check_cells = []
 
@@ -74,9 +73,6 @@ class Board:
         s += '\n'
 
         return s
-
-    def set_current_player(self, index):
-        self.current_player = self.players[index]
 
     def available_chains(self):
         available = []
@@ -211,7 +207,7 @@ class Board:
     def get_merger_decision(self, options, player : Player):
         return player.get_merger_decision(options)
 
-    def assign(self, row, col, initial_draw=False):
+    def assign(self, row, col, current_player, initial_draw=False):
         adjacent_cells = self.surrounding_cells(row, col)
         adjacent_hotels = [self.board[_row][_col] for _row, _col in adjacent_cells]
         adjacent_hotels = list(set(filter(lambda x : x is not None, adjacent_hotels)))
@@ -222,7 +218,11 @@ class Board:
         elif len(adjacent_hotels) == 1:
             hotel = adjacent_hotels[0]
             if hotel == "Single" and not initial_draw:
-                hotel = self.get_new_chain(self.current_player, self.available_chains())
+                hotel = self.get_new_chain(current_player, self.available_chains())
+
+                # give 1 free stock
+                current_player.buy_stock([hotel, ], [1, ], [0, ])
+
                 additional_cells = self.surrounding_single_cells(row, col)
                 mergees = []
                 merger = True
@@ -242,7 +242,7 @@ class Board:
             if sizes.count(max_size) == 1:
                 hotel = adjacent_hotels[sizes.index(max_size)]
             else:
-                hotel = self.get_merger_decision(adjacent_hotels, self.current_player)
+                hotel = self.get_merger_decision(adjacent_hotels, current_player)
             adjacent_hotels.pop(adjacent_hotels.index(hotel))
             mergees = adjacent_hotels
 
@@ -251,6 +251,7 @@ class Board:
         self.board[row][col] = hotel
 
         self.dead_check_cells.pop(self.dead_check_cells.index((str(row), str(col))))
+        self.update_dead_cells()
 
         if merger:
             self.merge(hotel, mergees, additional_cells)

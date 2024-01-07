@@ -57,19 +57,39 @@ class Player:
 
         return result
 
-    def get_buy_selections(self, options):
+    def get_buy_selections(self, options, stock_names, stocks_remaining):
         first_letters = [option[0] for option in options]
         display_options = [f"({letter}){option[1:]}" for letter, option in zip(first_letters, options)]
         result = input(f"Enter all stocks to purchase ({display_options}): ").strip().split(' ')
         result_good = [val in first_letters or val in options for val in result]
-        while not all(result_good):
-            print("Invalid")
-            result = input(f"Enter all stocks to purchase ({display_options}): ").strip().split(' ')
-            result_good = [val in first_letters or val in options for val in result]
 
-        for i, val in enumerate(result):
-            if val in first_letters: 
-                result[i] = options[first_letters.index(val)]
+        good = False
+
+        invalid_message = "Invalid: "
+
+        while not good:
+            good = True
+            invalid_message = "Invalid: "
+
+            if len(result) > 3:
+                invalid_message += "Cannot buy more than 3 stocks. "
+                good = False
+            if not all(result_good):
+                invalid_message += "Invalid stock names/symbols entered. "
+                good = False
+            if good:
+                for i, val in enumerate(result):
+                    if val in first_letters: 
+                        result[i] = options[first_letters.index(val)]
+                for name in stock_names:
+                    if result.count(name) > stocks_remaining[name]:
+                        invalid_message += f"Cannot buy {result.count(name)} stocks of {name}, only {stocks_remaining[name]} left. "
+                        good = False
+
+            if not good:
+                print(invalid_message)
+                result = input(f"Enter all stocks to purchase ({display_options}): ").strip().split(' ')
+                result_good = [val in first_letters or val in options for val in result]
 
         return result
     
