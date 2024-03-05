@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %} Acquire - A real estate game {% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <div>
+      <header>
+        <h1>Acquire</h1>
+      </header>
+      <p>
+        Rule the world of hotels
+      </p>
+      <main >
+        <form id="start">
+          <input id="room" type="text" placeholder="Game Name" />
+          <input type="submit" value="Join Game" />
+        </form>
+      </main>
+    </div>
+    <p></p>
+    <footer><a href="/admin">Create a game</a></footer>
+    <canvas id="myCanvas">
+      <p>Board Area</p>
+      <img id="tabletop" src="/static/tabletop.png"/>
+      <img id="american" src="/static/cards/american.jpg"/>
+      <img id="continental" src="/static/cards/continental.jpg"/>
+      <img id="festival" src="/static/cards/festival.jpg"/>
+      <img id="imperial" src="/static/cards/imperial.jpg"/>
+      <img id="luxor" src="/static/cards/luxor.jpg"/>
+      <img id="tower" src="/static/cards/tower.jpg"/>
+      <img id="worldwide" src="/static/cards/worldwide.jpg"/>
+    </canvas>
+    <button type="button" onClick="window.location.reload(true)">
+      Reload
+    </button>
+{% endblock %}
+{% block scripts %}
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+{% endblock %}

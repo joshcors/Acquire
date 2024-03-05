@@ -1,10 +1,12 @@
 import os
+import uuid
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class Player:
     def __init__(self, name):
         self.name = name
+        self.uuid = uuid.uuid4()
 
         self.money = 6000
 

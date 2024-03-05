@@ -14,5 +14,5 @@ setup(
     name="Acquire",
     description="Python source code for Acquire Board Game logic and UI",
     package_dir={"": "src"},
-    packages=["Game", "UI"]
+    packages=["Game", "UI", "Web"]
 )
