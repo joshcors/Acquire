@@ -13,9 +13,15 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 class Game:
     def __init__(self, players):
         self.players = players
+        for i in range(len(players)):
+            if isinstance(self.players[i], str):
+                self.players[i] = Player(self.players[i])
+
+        self.player_names = [player.name for player in self.players]
+        self.player_dict = {player.name : player for player in self.players}
         self.current_player_index = 0
 
-        with open(os.path.join(dir_path, "Game", "stock_names.txt"), 'r') as f:
+        with open(os.path.join(dir_path, "stock_names.txt"), 'r') as f:
             self.stock_names = f.read().splitlines()
 
         self.stocks = {name : Stock(name) for name in self.stock_names}
@@ -77,6 +83,15 @@ class Game:
             for j in range(len(self.players)):
                 self.players[j].add_tile(self.get_valid_random_tile())
 
+    def turn_tile_stage(self, tile_selected):
+        self.current_player = self.players[self.current_player_index]
+
+        success = self.current_player.handle_tile_selection(tile_selected)
+
+        print(f"Tile {tile_selected} {'not ' * (not success)}successfully added")
+
+        return success
+
     def turn(self):
         """
         Take turn of current player, consisting of:
@@ -84,7 +99,6 @@ class Game:
         2. Handling merger sale/2-for-1
         3. Handle stock purchase
         """
-        print(self.board)
         self.current_player = self.players[self.current_player_index]
         
         tile = self.players[self.current_player_index].get_tile_selection()

@@ -11,39 +11,27 @@
           </header>
           <input id="room" type="text" placeholder="Game Name" />
           <input type="submit", value="Sumbit name"/>
-          <p>Create a game, and start buzzing in!</p>
+          <p>Create a room for Acquire.</p>
       </main>
     </form>
     <main>
       <section id="panel">
         <div class="panel__header">
-          <h1>WhoDaMan</h1>
-          <input id="shareLink" disabled />
+          <p>Share Link</p>
+          <input id="shareLink" />
         </div>
         <div class="panel">
           <div class="panel__header">
-            <div class="panel__label">Leaderboard</div>
-            <div>
-              <button id="reset">Reset</button>
-            </div>
+            <div class="panel__label">Players</div>
           </div>
-          <ul id="leaderboard">
+          <ul id="player_list">
           </ul>
           <div class="panel__header">
             <div class="panel__label">Players &mdash; <span id="roomCount"></span></div>
             <div>
               <button id="begin">Begin</button>
-              <button id="done" style="display: none;">Done</button>
             </div>
           </div>
-          <ul id="qcontent">
-          </ul>
-          <div class="panel__header">
-            <div class="panel__label">Buzzes</div>
-            <button id="skip" style="display: none;">Skip</button>
-          </div>
-          <ul id="buzzes">
-          </ul>
         </div>
       </section>
     </main>

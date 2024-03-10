@@ -1,5 +1,3 @@
-import { drawBoard } from './board.js';
-
 var socket = io() // open a two-way connection to the server
 var $startForm = $('#start') // use jQuery to select HTML element with id 'start'
 var $roomField = $('#room') // to grab elements

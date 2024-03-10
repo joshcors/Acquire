@@ -1,5 +1,7 @@
 import os
 import uuid
+import locale
+locale.setlocale( locale.LC_ALL, '' )
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,6 +18,25 @@ class Player:
         self.stocks = {name : 0 for name in stock_names}
 
         self.tiles = []
+
+    def my_str(self):
+        stock_names = list(self.stocks.keys())
+        max_len = max([len(name) for name in stock_names]) + 2
+        width = len(stock_names) * (max_len + 1) + 1
+
+        s = '-' * width + '\n'
+        s += '|' + '|'.join([name.center(max_len) for name in stock_names]) + '|' + "\n"
+        s += '-' * width + '\n'
+        s += '|' + '|'.join([str(self.stocks[name]).center(max_len) for name in stock_names]) + '|' + "\n"
+        s += '-' * width + '\n\n'
+
+        s += f"Money: {locale.currency(self.money, grouping=True)}" + '\n\n'
+
+        s += ' '.join(["------", ] * len(self.tiles)) + '\n'
+        s += ' '.join(["|" + str(tile).center(4) + "|" for tile in self.tiles]) + '\n'
+        s += ' '.join(["------", ] * len(self.tiles)) + '\n'
+
+        return s
 
     def add_tile(self, tile):
         self.tiles.append(tile)
@@ -49,6 +70,14 @@ class Player:
 
         return result
     
+    def handle_tile_selection(self, tile):
+        try:
+            self.tiles.pop(self.tiles.index(tile))
+            return True
+        except:
+            return False
+            
+
     def get_tile_selection(self):
         result = input(f"Choose tile to place ({self.tiles}): ")
         while result not in self.tiles:

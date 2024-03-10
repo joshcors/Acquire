@@ -1,25 +1,33 @@
 {% extends "layout.html" %}
-{% block title %} WhoDaMan - Play {% endblock %}
+{% block title %} Acquire - Play {% endblock %}
 {% block head %}
     {{ super() }}
 {% endblock %}
 {% block content %}
     <div>
       <main>
+        <h1>
+          Acquire
+        </h1>
+        <div id="wait_form"></div>
         <form id="start">
           <header>
-            <h1>
-              WhoDaMan
-            </h1>
           </header>
           <input id="name" type="text" maxlength="100" placeholder="Your name">
+          <input type="submit" value="Join Game" />
           <p>P.S. Your name will be shared with the moderator</p>
         </form>
         <div id="panel">
-          <div class="panel__label">Score &mdash; <span id="score">0</span></div>
-          <button id="buzz" type="submit" style="display: none;">⚡️</button>
-          <div id="state">Waiting...</div>
+          <div class="panel__header">
+            <div class="panel__label"><span id="board" style="white-space: pre; font-family: monospace;"></span></div>
+            <div class="panel__label"><span id="info" style="white-space: pre; font-family: monospace;"></span></div>
+          </div>
         </div>
+        <form id="game_form">
+          <select id="tile_selection">
+          </select>
+          <input type="submit" value="Submit selection" />
+        </form>
         <ul id="buzzes"></ul>
       </main>
     </div>

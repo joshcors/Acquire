@@ -70,7 +70,8 @@ class Board:
             s += f'{sub_s}\n'
 
         s += '  ' + '-' * (12 * 2 + 1)
-        s += '\n'
+        s += '\n(S)ingle, (T)ower, (L)uxor, (A)merican, (W)orldwide, (F)estival, (I)mperial, (C)ontinental'
+        s += '\n\n'
 
         return s
 
